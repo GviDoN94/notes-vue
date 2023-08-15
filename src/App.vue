@@ -4,12 +4,22 @@
   const showModal = ref(false);
   const newNote = ref('');
   const notes = ref([]);
+  const errorMessage = ref('');
 
-  function getRandomColor() {
-    return 'hsl(' + Math.random() * 360 + ', 100%, 75%)';
-  }
+  const getRandomColor = () => 'hsl(' + Math.random() * 360 + ', 100%, 75%)';
+
+  const closeModal = () => {
+    newNote.value = '';
+    errorMessage.value = '';
+    showModal.value = false;
+  };
 
   const addNote = () => {
+    if (newNote.value.length < 10) {
+      errorMessage.value = 'Note needs to be 10 characters or more';
+      return;
+    }
+
     notes.value.push({
       id: Math.floor(Math.random() * 1000000),
       text: newNote.value,
@@ -17,8 +27,7 @@
       backgroundColor: getRandomColor(),
     });
 
-    showModal.value = false;
-    newNote.value = '';
+    closeModal();
   };
 </script>
 
@@ -30,15 +39,16 @@
     >
       <div class="modal">
         <textarea
-          v-model="newNote"
+          v-model.trim="newNote"
           name="note"
           id="note"
           cols="30"
           rows="10"
         ></textarea>
+        <p v-if="errorMessage">{{ errorMessage }}</p>
         <button @click="addNote">Add Note</button>
         <button
-          @click="showModal = false"
+          @click="closeModal"
           class="close"
         >
           Close
@@ -51,19 +61,16 @@
         <button @click="showModal = true">+</button>
       </header>
       <div class="cards-container">
-        <div class="card">
+        <div
+          class="card"
+          v-for="note in notes"
+          :key="note.id"
+          :style="`background-color: ${note.backgroundColor}`"
+        >
           <p class="main-text">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Eius
-            aliquam tempora molestias. Laborum, animi magni!
+            {{ note.text }}
           </p>
-          <p class="date">04/27/6853</p>
-        </div>
-        <div class="card">
-          <p class="main-text">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Eius
-            aliquam tempora molestias. Laborum, animi magni!
-          </p>
-          <p class="date">04/27/6853</p>
+          <p class="date">{{ note.date.toLocaleDateString('ru-RU') }}</p>
         </div>
       </div>
     </div>
@@ -164,5 +171,9 @@
   .modal .close {
     background-color: rgb(193, 15, 15);
     margin-top: 7px;
+  }
+
+  .modal p {
+    color: rgb(193, 15, 15);
   }
 </style>
